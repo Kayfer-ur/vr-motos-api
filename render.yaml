@@ -13,5 +13,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: CLOUDINARY_URL
+        sync: false
       - key: EXPIRA_TOKEN_HORAS
         value: "8"

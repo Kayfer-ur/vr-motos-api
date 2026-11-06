@@ -7,3 +7,4 @@ python-multipart
 passlib
 PyJWT
 email-validator
+cloudinary

@@ -4,6 +4,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import List, Optional
 
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 
@@ -14,7 +16,7 @@ from schemas import MotoSaida
 
 router = APIRouter(prefix="/motos", tags=["Motos"])
 
-# Pasta local onde as fotos são guardadas (raiz do projeto / static / fotos)
+# Pasta local onde as fotos eram guardadas (mantida por compatibilidade)
 PASTA_FOTOS = Path(__file__).resolve().parent.parent / "static" / "fotos"
 PASTA_FOTOS.mkdir(parents=True, exist_ok=True)
 
@@ -22,10 +24,19 @@ STATUS_VALIDOS = {"DISPONIVEL", "VENDIDA"}
 
 
 def _url_completa(request: Request, caminho_relativo: Optional[str]) -> Optional[str]:
-    """Converte 'static/fotos/abc.jpg' em 'http://127.0.0.1:8000/static/fotos/abc.jpg'."""
+    """Converte 'static/fotos/abc.jpg' em URL completa (usado apenas para fotos antigas locais)."""
     if not caminho_relativo:
         return None
     return f"{str(request.base_url).rstrip('/')}/{caminho_relativo}"
+
+
+def _para_url(caminho: Optional[str], request: Request) -> Optional[str]:
+    """Devolve o URL da foto: direto se já for um link (Cloudinary) ou local."""
+    if not caminho:
+        return None
+    if caminho.startswith("http"):
+        return caminho
+    return _url_completa(request, caminho)
 
 
 def _ciclo_vr(data_venda: Optional[datetime]) -> Optional[str]:
@@ -41,11 +52,11 @@ def _ciclo_vr(data_venda: Optional[datetime]) -> Optional[str]:
 
 
 def _montar_saida(moto: Moto, request: Request) -> MotoSaida:
-    urls = [u for u in (_url_completa(request, f.caminho) for f in moto.fotos) if u]
+    urls = [u for u in (_para_url(f.caminho, request) for f in moto.fotos) if u]
 
     # Compatibilidade: motos antigas que só têm imagem_url (cadastro com uma única foto)
     if not urls and moto.imagem_url:
-        u = _url_completa(request, moto.imagem_url)
+        u = _para_url(moto.imagem_url, request)
         urls = [u] if u else []
 
     return MotoSaida(
@@ -65,18 +76,17 @@ def _montar_saida(moto: Moto, request: Request) -> MotoSaida:
 
 
 def _guardar_foto(imagem: UploadFile) -> str:
-    """Grava o ficheiro em static/fotos/ e devolve o caminho relativo a guardar na BD."""
+    """Envia a foto para o Cloudinary e devolve o URL seguro (guardado na BD)."""
     if imagem.content_type and not imagem.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="O ficheiro enviado não é uma imagem.")
 
-    extensao = Path(imagem.filename or "").suffix.lower()
-    if extensao not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
-        extensao = ".jpg"
-
-    nome = f"{uuid.uuid4().hex}{extensao}"
-    caminho = PASTA_FOTOS / nome
-    caminho.write_bytes(imagem.file.read())
-    return f"static/fotos/{nome}"
+    imagem.file.seek(0)
+    resultado = cloudinary.uploader.upload(
+        imagem.file,
+        public_id=f"{uuid.uuid4().hex}",
+        resource_type="image",
+    )
+    return resultado.get("secure_url") or resultado.get("url")
 
 
 @router.get("", response_model=list[MotoSaida])
@@ -143,19 +153,27 @@ def vender_moto(moto_id: int, request: Request, db: Session = Depends(get_db)):
 
 @router.delete("/{moto_id}", dependencies=[Depends(requer_admin)])
 def apagar_moto(moto_id: int, db: Session = Depends(get_db)):
-    """Apaga a moto e as suas fotos (ficheiros no disco + registos na BD)."""
+    """Apaga a moto e as suas fotos (Cloudinary e/ou disco) e os registos na BD."""
     moto = db.query(Moto).filter(Moto.id == moto_id).first()
     if moto is None:
         raise HTTPException(status_code=404, detail="Moto não encontrada.")
 
-    # Apaga os ficheiros de imagem do disco
     for foto in list(moto.fotos):
-        caminho_abs = PASTA_FOTOS / Path(foto.caminho).name
-        try:
-            if caminho_abs.exists():
-                caminho_abs.unlink()
-        except OSError:
-            pass
+        if foto.caminho and foto.caminho.startswith("http"):
+            # Foto no Cloudinary: apaga pelo public_id (nome sem extensão)
+            public_id = Path(foto.caminho).stem
+            try:
+                cloudinary.uploader.destroy(public_id)
+            except Exception:
+                pass
+        else:
+            # Foto local antiga
+            caminho_abs = PASTA_FOTOS / Path(foto.caminho).name
+            try:
+                if caminho_abs.exists():
+                    caminho_abs.unlink()
+            except OSError:
+                pass
 
     db.delete(moto)  # o cascade apaga as linhas da tabela 'fotos'
     db.commit()
