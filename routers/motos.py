@@ -102,11 +102,14 @@ def _guardar_foto(imagem: UploadFile) -> str:
         raise HTTPException(status_code=400, detail="O ficheiro enviado não é uma imagem.")
 
     imagem.file.seek(0)
-    resultado = cloudinary.uploader.upload(
-        imagem.file,
-        public_id=f"{uuid.uuid4().hex}",
-        resource_type="image",
-    )
+    try:
+        resultado = cloudinary.uploader.upload(
+            imagem.file,
+            public_id=f"{uuid.uuid4().hex}",
+            resource_type="image",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao enviar a foto: {e}")
     return resultado.get("secure_url") or resultado.get("url")
 
 
