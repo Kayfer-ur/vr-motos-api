@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
@@ -13,6 +14,26 @@ from auth import requer_admin
 from database import get_db
 from models import Foto, Moto
 from schemas import MotoSaida
+
+
+def _configurar_cloudinary():
+    """Configura o Cloudinary a partir da variável de ambiente CLOUDINARY_URL."""
+    url = os.environ.get("CLOUDINARY_URL", "")
+    if url.startswith("cloudinary://"):
+        rest = url[len("cloudinary://"):]
+        if "@" in rest:
+            creds, cloud_name = rest.rsplit("@", 1)
+            if ":" in creds:
+                api_key, api_secret = creds.split(":", 1)
+                cloudinary.config(
+                    cloud_name=cloud_name,
+                    api_key=api_key,
+                    api_secret=api_secret,
+                    secure=True,
+                )
+
+
+_configurar_cloudinary()
 
 router = APIRouter(prefix="/motos", tags=["Motos"])
 
