@@ -8,7 +8,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg2://postgres:postgres@localhost:5432/vrmotos",
+    "postgresql+psycopg://postgres:postgres@localhost:5432/vrmotos",
 )
 
 engine = create_engine(DATABASE_URL)
