@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR MoTos - Sistema de Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body class="bg-[#121212] flex flex-col min-h-screen text-gray-200 font-sans selection:bg-yellow-600 selection:text-white">
+
+    <!-- ================= TELA DE LOGIN ================= -->
+    <div id="tela-login" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-[#1e1e1e] p-8 rounded-2xl shadow-2xl max-w-md w-full border border-[#2a2a2a]">
+            <div class="flex justify-center mb-4">
+                <span class="text-4xl">🏍️</span>
+            </div>
+            <h1 class="text-3xl font-black text-center mb-2 text-yellow-500 tracking-tight">VR MoTos</h1>
+            <p class="text-gray-400 text-center mb-8 text-sm">Acesso Reservado ao Sistema</p>
+
+            <form id="form-login" onsubmit="fazerLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+                    <input type="email" id="login-email" required autocomplete="username"
+                        class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1.5">Palavra-passe</label>
+                    <input type="password" id="login-senha" required autocomplete="current-password"
+                        class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                </div>
+                <div id="login-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg"></div>
+                <button id="btn-login" type="submit"
+                    class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold py-3.5 rounded-lg mt-2 shadow-lg hover:-translate-y-0.5 transition-all">
+                    Entrar no Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= SISTEMA PRINCIPAL ================= -->
+    <div id="sistema-principal" class="hidden flex-col min-h-screen">
+        <header class="bg-[#1a1a1a] text-white p-4 border-b border-[#2a2a2a] sticky top-0 z-40 shadow-md">
+            <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+                <div class="font-black text-2xl text-yellow-500 tracking-tighter">🏍️ VR MoTos</div>
+                <nav class="flex items-center space-x-2 sm:space-x-6">
+                    <button onclick="mostrarTela('estoque')"
+                        class="px-3 py-2 text-gray-300 hover:text-yellow-400 font-medium transition rounded-lg hover:bg-[#2a2a2a]">Estoque</button>
+                    <button onclick="mostrarTela('dashboard')"
+                        class="px-3 py-2 text-gray-300 hover:text-yellow-400 font-medium transition rounded-lg hover:bg-[#2a2a2a]">📊 Painel</button>
+                    <div class="border-l border-[#333] pl-6 flex items-center gap-4 ml-2">
+                        <span id="nome-usuario" class="text-sm font-medium text-gray-400 hidden sm:block"></span>
+                        <button onclick="fazerLogout()" class="text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg transition font-medium text-sm">Sair</button>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-[1400px] mx-auto w-full p-4 md:p-8">
+            <!-- Tela Estoque -->
+            <div id="tela-estoque" class="w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white tracking-tight">Estoque de Motos</h2>
+                    </div>
+                    <button id="btn-cadastrar" onclick="abrirModalCadastro()"
+                        class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
+                        + Cadastrar Nova
+                    </button>
+                </div>
+
+                <div id="estoque-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg mb-4"></div>
+
+                <div class="bg-[#1e1e1e] rounded-xl overflow-hidden border border-[#2a2a2a] shadow-2xl">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-[#161616] text-xs uppercase text-gray-500 font-bold border-b border-[#2a2a2a]">
+                            <tr>
+                                <th class="px-6 py-5">Foto Principal</th>
+                                <th class="px-6 py-5">Status</th>
+                                <th class="px-6 py-5">Veículo</th>
+                                <th class="px-6 py-5">Valor (R$)</th>
+                                <th class="px-6 py-5 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-motos" class="divide-y divide-[#2a2a2a]">
+                            <tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tela Dashboard Mês VR -->
+            <div id="tela-dashboard" class="hidden">
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h2 class="text-3xl font-bold text-white tracking-tight">Painel Financeiro (Mês VR)</h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-400">Filtrar Ciclo:</label>
+                        <select id="filtro-mes" onchange="atualizarDashboard()"
+                            class="bg-[#121212] text-white border border-[#333] rounded-lg p-2 outline-none">
+                            <option value="11">Novembro (21/10 a 20/11)</option>
+                            <option value="12">Dezembro (21/11 a 20/12)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-2">Capital em Estoque (Disponível)</p>
+                        <p id="dash-valor" class="text-4xl font-black text-yellow-500">R$ 0,00</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-2">Motos Vendidas no Ciclo</p>
+                        <p id="dash-qtd" class="text-4xl font-black text-white">0</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MODAL CARROSSEL ================= -->
+    <div id="modal-fotos" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+        <div class="w-full max-w-4xl relative">
+            <button onclick="fecharModalFotos()" class="absolute top-4 right-4 text-white text-4xl hover:text-red-500 z-50">&times;</button>
+            <div class="relative flex items-center justify-center h-[80vh]">
+                <button onclick="mudarFoto(-1)" class="absolute left-4 text-white text-5xl hover:text-gray-400">&larr;</button>
+                <img id="imagem-carrossel" src="" class="max-h-full max-w-full object-contain" alt="Foto da moto">
+                <button onclick="mudarFoto(1)" class="absolute right-4 text-white text-5xl hover:text-gray-400">&rarr;</button>
+            </div>
+            <div class="text-center text-white mt-4 text-lg font-bold" id="contador-fotos">1 / 1</div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CADASTRO ================= -->
+    <div id="modal-cadastro" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-[#1e1e1e] rounded-2xl w-full max-w-lg border border-[#333] shadow-2xl p-6 my-8">
+            <h3 class="font-bold text-xl text-white mb-4">Cadastrar Nova Moto</h3>
+            <div id="cadastro-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg mb-4"></div>
+
+            <form id="form-cadastro" onsubmit="cadastrarMoto(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Marca</label>
+                        <input name="marca" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Modelo</label>
+                        <input name="modelo" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Ano</label>
+                        <input name="ano" type="number" min="1900" max="2100" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Cor</label>
+                        <input name="cor" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1.5">Preço (R$)</label>
+                    <input name="preco" type="number" min="0" step="0.01" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Status</label>
+                        <select name="status" class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                            <option value="DISPONIVEL">Disponível</option>
+                            <option value="VENDIDA">Vendida</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1.5">Data da venda (se Vendida)</label>
+                        <input name="data_venda" type="date" class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1.5">Fotos da moto (selecione uma ou mais)</label>
+                    <input name="imagens" type="file" accept="image/*" multiple required class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-600 file:text-black file:font-bold hover:file:bg-yellow-500">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition">Salvar</button>
+                    <button type="button" onclick="fecharModalCadastro()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIGURAÇÃO =================
+        const API_BASE = "";
+        const TOKEN_KEY = "vrmotos_token";
+        const USER_KEY = "vrmotos_user";
+
+        let motos = [];
+        let fotosAtuais = [];
+        let indiceAtual = 0;
+
+        // ================= UTILITÁRIOS =================
+        function getToken() { return localStorage.getItem(TOKEN_KEY); }
+        function getUser() {
+            try { return JSON.parse(localStorage.getItem(USER_KEY)); }
+            catch { return null; }
+        }
+
+        function formatarPreco(v) {
+            const n = Number(v) || 0;
+            return "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function mensagemDeErro(resp) {
+            let msg = "Erro " + resp.status;
+            try {
+                const data = await resp.json();
+                if (typeof data.detail === "string") msg = data.detail;
+                else if (Array.isArray(data.detail)) msg = data.detail.map(d => d.msg).join("; ");
+            } catch { /* ignora */ }
+            return msg;
+        }
+
+        function mostrarTela(tela) {
+            document.getElementById('tela-estoque').classList.toggle('hidden', tela !== 'estoque');
+            document.getElementById('tela-dashboard').classList.toggle('hidden', tela !== 'dashboard');
+        }
+
+        function entrarNoSistema() {
+            const user = getUser();
+            document.getElementById('tela-login').classList.add('hidden');
+            const principal = document.getElementById('sistema-principal');
+            principal.classList.remove('hidden');
+            principal.classList.add('flex');
+
+            if (user) {
+                document.getElementById('nome-usuario').innerText = "Olá, " + (user.nome || user.email.split('@')[0]);
+                const isAdmin = user.role === 'admin';
+                document.getElementById('btn-cadastrar').classList.toggle('hidden', !isAdmin);
+            }
+            mostrarTela('estoque');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            location.reload();
+        }
+
+        // ================= LOGIN =================
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const senha = document.getElementById('login-senha').value;
+            const erro = document.getElementById('login-erro');
+            const btn = document.getElementById('btn-login');
+
+            erro.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerText = "A entrar...";
+
+            try {
+                const resp = await fetch(API_BASE + "/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                if (!resp.ok) {
+                    throw new Error(await mensagemDeErro(resp));
+                }
+
+                const data = await resp.json();
+                localStorage.setItem(TOKEN_KEY, data.access_token);
+                localStorage.setItem(USER_KEY, JSON.stringify(data.usuario));
+                entrarNoSistema();
+                await carregarMotos();
+            } catch (err) {
+                erro.textContent = err.message || "Erro ao entrar.";
+                erro.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Entrar no Sistema";
+            }
+        }
+
+        // ================= MOTOS =================
+        async function carregarMotos() {
+            const erroBox = document.getElementById('estoque-erro');
+            erroBox.classList.add('hidden');
+            try {
+                const resp = await fetch(API_BASE + "/motos");
+                if (!resp.ok) throw new Error(await mensagemDeErro(resp));
+                motos = await resp.json();
+                renderizarMotos();
+                atualizarDashboard();
+            } catch (err) {
+                erroBox.textContent = "Não foi possível carregar as motos: " + err.message;
+                erroBox.classList.remove('hidden');
+                document.getElementById('tabela-motos').innerHTML =
+                    '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Erro ao carregar.</td></tr>';
+            }
+        }
+
+        function renderizarMotos() {
+            const tabela = document.getElementById('tabela-motos');
+            tabela.innerHTML = '';
+
+            if (motos.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Nenhuma moto cadastrada.</td></tr>';
+                return;
+            }
+
+            const user = getUser();
+            const isAdmin = user && user.role === 'admin';
+
+            motos.forEach(moto => {
+                const fotos = (moto.fotos && moto.fotos.length) ? moto.fotos : [];
+                const foto = fotos.length ? fotos[0] : "https://via.placeholder.com/80x50?text=Sem+foto";
+                const arrStr = JSON.stringify(fotos).replace(/"/g, "&quot;");
+                const corStatus = moto.status === 'DISPONIVEL'
+                    ? 'text-green-400 bg-green-900/40'
+                    : 'text-red-400 bg-red-900/40';
+
+                const acoes = [];
+                acoes.push(`<button onclick="abrirModalFotos('${arrStr}')" class="text-blue-400 hover:text-white font-medium">📷 Ver Galeria</button>`);
+                if (isAdmin && moto.status === 'DISPONIVEL') {
+                    acoes.push(`<button onclick="venderMoto(${moto.id})" class="text-yellow-400 hover:text-white font-medium ml-3">💰 Vender</button>`);
+                }
+                if (isAdmin) {
+                    acoes.push(`<button onclick="apagarMoto(${moto.id})" class="text-red-400 hover:text-white font-medium ml-3">🗑️ Apagar</button>`);
+                }
+
+                tabela.innerHTML += `
+                    <tr class="hover:bg-[#242424] transition-colors border-t border-[#2a2a2a]">
+                        <td class="px-6 py-4"><img src="${foto}" class="w-16 h-10 object-cover rounded" alt=""></td>
+                        <td class="px-6 py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${moto.status}</span></td>
+                        <td class="px-6 py-4 font-bold text-gray-100 uppercase">${moto.marca} ${moto.modelo} <span class="text-gray-500 font-normal normal-case">(${moto.ano})</span></td>
+                        <td class="px-6 py-4 text-yellow-500 font-bold">${formatarPreco(moto.preco)}</td>
+                        <td class="px-6 py-4 text-right">${acoes.join('')}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ================= CADASTRO =================
+        function abrirModalCadastro() {
+            document.getElementById('cadastro-erro').classList.add('hidden');
+            document.getElementById('form-cadastro').reset();
+            document.getElementById('modal-cadastro').classList.remove('hidden');
+        }
+        function fecharModalCadastro() {
+            document.getElementById('modal-cadastro').classList.add('hidden');
+        }
+
+        async function cadastrarMoto(event) {
+            event.preventDefault();
+            const form = document.getElementById('form-cadastro');
+            const erro = document.getElementById('cadastro-erro');
+            erro.classList.add('hidden');
+
+            const fd = new FormData(form);
+            if (!fd.get('data_venda')) fd.delete('data_venda');
+
+            try {
+                const resp = await fetch(API_BASE + "/motos", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + getToken() },
+                    body: fd
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        throw new Error("Sessão expirada ou sem permissão. Faça login novamente.");
+                    }
+                    throw new Error(await mensagemDeErro(resp));
+                }
+
+                fecharModalCadastro();
+                await carregarMotos();
+            } catch (err) {
+                erro.textContent = err.message || "Erro ao cadastrar.";
+                erro.classList.remove('hidden');
+            }
+        }
+
+        // ================= VENDER =================
+        async function venderMoto(id) {
+            if (!confirm("Marcar esta moto como VENDIDA?")) return;
+            try {
+                const resp = await fetch(API_BASE + "/motos/" + id + "/vender", {
+                    method: "PATCH",
+                    headers: { "Authorization": "Bearer " + getToken() }
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        throw new Error("Sessão expirada ou sem permissão. Faça login novamente.");
+                    }
+                    throw new Error(await mensagemDeErro(resp));
+                }
+
+                await carregarMotos();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ================= APAGAR =================
+        async function apagarMoto(id) {
+            if (!confirm("Apagar esta moto? Esta ação não pode ser desfeita.")) return;
+            try {
+                const resp = await fetch(API_BASE + "/motos/" + id, {
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + getToken() }
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        throw new Error("Sessão expirada ou sem permissão. Faça login novamente.");
+                    }
+                    throw new Error(await mensagemDeErro(resp));
+                }
+
+                await carregarMotos();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ================= DASHBOARD =================
+        function atualizarDashboard() {
+            const mes = document.getElementById('filtro-mes').value;
+            let totalEstoque = 0;
+            let vendidas = 0;
+
+            motos.forEach(m => {
+                if (m.status === "DISPONIVEL") totalEstoque += Number(m.preco) || 0;
+                if (m.status === "VENDIDA" && m.ciclo === mes) vendidas++;
+            });
+
+            totalEstoque = Math.round(totalEstoque * 100) / 100;
+            document.getElementById('dash-valor').innerText = formatarPreco(totalEstoque);
+            document.getElementById('dash-qtd').innerText = vendidas;
+        }
+
+        // ================= CARROSSEL =================
+        function abrirModalFotos(fotosJson) {
+            try {
+                fotosAtuais = JSON.parse(fotosJson);
+            } catch {
+                fotosAtuais = [];
+            }
+            if (!fotosAtuais.length) fotosAtuais = ["https://via.placeholder.com/800x400?text=Sem+foto"];
+            indiceAtual = 0;
+            atualizarCarrossel();
+            document.getElementById('modal-fotos').classList.remove('hidden');
+        }
+        function fecharModalFotos() { document.getElementById('modal-fotos').classList.add('hidden'); }
+        function mudarFoto(direcao) {
+            indiceAtual += direcao;
+            if (indiceAtual < 0) indiceAtual = fotosAtuais.length - 1;
+            if (indiceAtual >= fotosAtuais.length) indiceAtual = 0;
+            atualizarCarrossel();
+        }
+        function atualizarCarrossel() {
+            document.getElementById('imagem-carrossel').src = fotosAtuais[indiceAtual];
+            document.getElementById('contador-fotos').innerText = "Foto " + (indiceAtual + 1) + " de " + fotosAtuais.length;
+        }
+
+        // ================= INICIALIZAÇÃO =================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (getToken()) {
+                entrarNoSistema();
+                carregarMotos();
+            }
+        });
+    </script>
+</body>
+</html>
