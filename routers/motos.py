@@ -43,6 +43,9 @@ PASTA_FOTOS.mkdir(parents=True, exist_ok=True)
 
 STATUS_VALIDOS = {"DISPONIVEL", "VENDIDA"}
 
+# Lucro fixo por moto vendida
+LUCRO_FIXO = Decimal("700")
+
 
 def _url_completa(request: Request, caminho_relativo: Optional[str]) -> Optional[str]:
     """Converte 'static/fotos/abc.jpg' em URL completa (usado apenas para fotos antigas locais)."""
@@ -86,6 +89,7 @@ def _montar_saida(moto: Moto, request: Request) -> MotoSaida:
         modelo=moto.modelo,
         ano=moto.ano,
         cor=moto.cor,
+        chassi=moto.chassi,
         preco=float(moto.preco),
         status=moto.status,
         imagem_url=urls[0] if urls else None,
@@ -127,6 +131,7 @@ def cadastrar_moto(
     modelo: str = Form(...),
     ano: int = Form(...),
     cor: str = Form(...),
+    chassi: Optional[str] = Form(None),
     preco: Decimal = Form(...),
     status: str = Form("DISPONIVEL"),
     data_venda: Optional[date] = Form(None),
@@ -143,12 +148,17 @@ def cadastrar_moto(
 
     caminhos = [_guardar_foto(img) for img in imagens]
 
+    # Custo calculado silenciosamente: preço menos o lucro fixo de R$ 700
+    preco_custo = preco - LUCRO_FIXO
+
     moto = Moto(
         marca=marca,
         modelo=modelo,
         ano=ano,
         cor=cor,
+        chassi=chassi,
         preco=preco,
+        preco_custo=preco_custo,
         status=status,
         imagem_url=caminhos[0],
         data_venda=datetime.combine(data_venda, datetime.min.time()) if data_venda else None,

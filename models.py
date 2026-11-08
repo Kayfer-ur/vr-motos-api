@@ -24,7 +24,9 @@ class Moto(Base):
     modelo = Column(String(120), nullable=False)
     ano = Column(Integer, nullable=False)
     cor = Column(String(60), nullable=False)
+    chassi = Column(String(30), nullable=True)
     preco = Column(Numeric(10, 2), nullable=False)
+    preco_custo = Column(Numeric(10, 2), nullable=True)
     status = Column(String(20), nullable=False, default="DISPONIVEL")  # DISPONIVEL | VENDIDA
     # Guarda o caminho relativo da foto principal (a 1ª enviada).
     imagem_url = Column(String(255), nullable=True)

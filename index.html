@@ -48,21 +48,42 @@
         <header class="bg-[#1a1a1a] text-white p-4 border-b border-[#2a2a2a] sticky top-0 z-40 shadow-md">
             <div class="max-w-[1400px] mx-auto flex justify-between items-center">
                 <div class="font-black text-2xl text-yellow-500 tracking-tighter">🏍️ VR MoTos</div>
-                <nav class="flex items-center space-x-2 sm:space-x-6">
+
+                <!-- Menu desktop -->
+                <nav class="hidden md:flex items-center space-x-2 sm:space-x-6">
                     <button onclick="mostrarTela('estoque')"
                         class="px-3 py-2 text-gray-300 hover:text-yellow-400 font-medium transition rounded-lg hover:bg-[#2a2a2a]">Estoque</button>
+                    <button onclick="mostrarTela('faturamento')"
+                        class="px-3 py-2 text-gray-300 hover:text-yellow-400 font-medium transition rounded-lg hover:bg-[#2a2a2a]">💰 Faturamento</button>
                     <button onclick="mostrarTela('dashboard')"
                         class="px-3 py-2 text-gray-300 hover:text-yellow-400 font-medium transition rounded-lg hover:bg-[#2a2a2a]">📊 Painel</button>
                     <div class="border-l border-[#333] pl-6 flex items-center gap-4 ml-2">
-                        <span id="nome-usuario" class="text-sm font-medium text-gray-400 hidden sm:block"></span>
+                        <span class="nome-usuario text-sm font-medium text-gray-400"></span>
                         <button onclick="fazerLogout()" class="text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg transition font-medium text-sm">Sair</button>
                     </div>
                 </nav>
+
+                <!-- Botão hambúrguer (mobile) -->
+                <button onclick="toggleMenu()" class="md:hidden text-2xl text-gray-300 hover:text-yellow-400 focus:outline-none" aria-label="Menu">☰</button>
+            </div>
+
+            <!-- Menu mobile -->
+            <div id="menu-mobile" class="hidden md:hidden mt-3 pb-1 space-y-1">
+                <button onclick="mostrarTela('estoque')"
+                    class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-[#2a2a2a] rounded-lg font-medium">Estoque</button>
+                <button onclick="mostrarTela('faturamento')"
+                    class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-[#2a2a2a] rounded-lg font-medium">💰 Faturamento</button>
+                <button onclick="mostrarTela('dashboard')"
+                    class="block w-full text-left px-4 py-3 text-gray-300 hover:bg-[#2a2a2a] rounded-lg font-medium">📊 Painel</button>
+                <div class="border-t border-[#333] my-2"></div>
+                <span class="nome-usuario block px-4 py-2 text-sm text-gray-400"></span>
+                <button onclick="fazerLogout()"
+                    class="block w-full text-left px-4 py-3 text-red-400 hover:bg-[#2a2a2a] rounded-lg font-medium">Sair</button>
             </div>
         </header>
 
         <main class="flex-1 max-w-[1400px] mx-auto w-full p-4 md:p-8">
-            <!-- Tela Estoque -->
+            <!-- ================= Tela Estoque ================= -->
             <div id="tela-estoque" class="w-full">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
@@ -76,25 +97,76 @@
 
                 <div id="estoque-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg mb-4"></div>
 
-                <div class="bg-[#1e1e1e] rounded-xl overflow-hidden border border-[#2a2a2a] shadow-2xl">
-                    <table class="w-full text-left text-sm text-gray-300">
+                <div class="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] shadow-2xl overflow-x-auto">
+                    <table class="w-full min-w-[760px] text-left text-sm text-gray-300 whitespace-nowrap">
                         <thead class="bg-[#161616] text-xs uppercase text-gray-500 font-bold border-b border-[#2a2a2a]">
                             <tr>
-                                <th class="px-6 py-5">Foto Principal</th>
+                                <th class="px-6 py-5">Foto</th>
                                 <th class="px-6 py-5">Status</th>
                                 <th class="px-6 py-5">Veículo</th>
+                                <th class="px-6 py-5">Chassi</th>
                                 <th class="px-6 py-5">Valor (R$)</th>
                                 <th class="px-6 py-5 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-motos" class="divide-y divide-[#2a2a2a]">
-                            <tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
+                            <tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tela Dashboard Mês VR -->
+            <!-- ================= Tela Faturamento ================= -->
+            <div id="tela-faturamento" class="hidden">
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white tracking-tight">Faturamento (Mês VR)</h2>
+                        <p class="text-gray-400 text-sm mt-1">Dinheiro movimentado e ganhos operacionais</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-400">Ciclo:</label>
+                            <select id="filtro-mes-faturamento" onchange="atualizarFaturamento()"
+                                class="bg-[#121212] text-white border border-[#333] rounded-lg p-2 outline-none">
+                                <option value="11">Novembro (21/10 a 20/11)</option>
+                                <option value="12">Dezembro (21/11 a 20/12)</option>
+                            </select>
+                        </div>
+                        <button onclick="exportarCSV()"
+                            class="bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold transition">
+                            ⬇️ Exportar Relatório (CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-2">Faturamento Total no Ciclo</p>
+                        <p id="fat-valor" class="text-4xl font-black text-yellow-500">R$ 0,00</p>
+                        <p class="text-gray-500 text-sm mt-2"><span id="fat-qtd">0</span> moto(s) vendida(s)</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-2">Ganhos Operacionais (R$ 700/moto)</p>
+                        <p id="fat-ganhos" class="text-4xl font-black text-green-400">R$ 0,00</p>
+                        <p class="text-gray-500 text-sm mt-2">Lucro fixo por veículo vendido</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-3">Comparador de Rentabilidade</p>
+                        <div class="flex items-end gap-6">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase mb-1">Seu Lucro Médio</p>
+                                <p id="fat-lucro-pct" class="text-4xl font-black text-white">0,0%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase mb-1">Selic (ref.)</p>
+                                <p class="text-3xl font-bold text-gray-400">0,8% a.m.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= Tela Dashboard Mês VR ================= -->
             <div id="tela-dashboard" class="hidden">
                 <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <h2 class="text-3xl font-bold text-white tracking-tight">Painel Financeiro (Mês VR)</h2>
@@ -110,7 +182,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 font-medium mb-2">Capital em Estoque (Disponível)</p>
+                        <p class="text-gray-400 font-medium mb-2">Capital em Estoque (Dinheiro Parado)</p>
                         <p id="dash-valor" class="text-4xl font-black text-yellow-500">R$ 0,00</p>
                     </div>
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
@@ -163,6 +235,10 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1.5">Chassi</label>
+                    <input name="chassi" class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none" placeholder="Ex.: 9BWZZZ377VT004251">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1.5">Preço (R$)</label>
                     <input name="preco" type="number" min="0" step="0.01" required class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
                 </div>
@@ -196,6 +272,8 @@
         const API_BASE = "";
         const TOKEN_KEY = "vrmotos_token";
         const USER_KEY = "vrmotos_user";
+        const LUCRO_FIXO = 700;
+        const SELIC_MENSAL = 0.8; // % ao mês (referência)
 
         let motos = [];
         let fotosAtuais = [];
@@ -213,6 +291,10 @@
             return "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        function formatarPct(v) {
+            return Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+        }
+
         async function mensagemDeErro(resp) {
             let msg = "Erro " + resp.status;
             try {
@@ -223,9 +305,17 @@
             return msg;
         }
 
+        function toggleMenu() {
+            document.getElementById('menu-mobile').classList.toggle('hidden');
+        }
+
         function mostrarTela(tela) {
             document.getElementById('tela-estoque').classList.toggle('hidden', tela !== 'estoque');
+            document.getElementById('tela-faturamento').classList.toggle('hidden', tela !== 'faturamento');
             document.getElementById('tela-dashboard').classList.toggle('hidden', tela !== 'dashboard');
+            document.getElementById('menu-mobile').classList.add('hidden');
+            if (tela === 'faturamento') atualizarFaturamento();
+            if (tela === 'dashboard') atualizarDashboard();
         }
 
         function entrarNoSistema() {
@@ -236,7 +326,8 @@
             principal.classList.add('flex');
 
             if (user) {
-                document.getElementById('nome-usuario').innerText = "Olá, " + (user.nome || user.email.split('@')[0]);
+                const nome = user.nome || user.email.split('@')[0];
+                document.querySelectorAll('.nome-usuario').forEach(el => el.innerText = "Olá, " + nome);
                 const isAdmin = user.role === 'admin';
                 document.getElementById('btn-cadastrar').classList.toggle('hidden', !isAdmin);
             }
@@ -268,9 +359,7 @@
                     body: JSON.stringify({ email, senha })
                 });
 
-                if (!resp.ok) {
-                    throw new Error(await mensagemDeErro(resp));
-                }
+                if (!resp.ok) throw new Error(await mensagemDeErro(resp));
 
                 const data = await resp.json();
                 localStorage.setItem(TOKEN_KEY, data.access_token);
@@ -296,11 +385,12 @@
                 motos = await resp.json();
                 renderizarMotos();
                 atualizarDashboard();
+                atualizarFaturamento();
             } catch (err) {
                 erroBox.textContent = "Não foi possível carregar as motos: " + err.message;
                 erroBox.classList.remove('hidden');
                 document.getElementById('tabela-motos').innerHTML =
-                    '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Erro ao carregar.</td></tr>';
+                    '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Erro ao carregar.</td></tr>';
             }
         }
 
@@ -309,7 +399,7 @@
             tabela.innerHTML = '';
 
             if (motos.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Nenhuma moto cadastrada.</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Nenhuma moto cadastrada.</td></tr>';
                 return;
             }
 
@@ -325,7 +415,7 @@
                     : 'text-red-400 bg-red-900/40';
 
                 const acoes = [];
-                acoes.push(`<button onclick="abrirModalFotos('${arrStr}')" class="text-blue-400 hover:text-white font-medium">📷 Ver Galeria</button>`);
+                acoes.push(`<button onclick="abrirModalFotos('${arrStr}')" class="text-blue-400 hover:text-white font-medium">📷 Galeria</button>`);
                 if (isAdmin && moto.status === 'DISPONIVEL') {
                     acoes.push(`<button onclick="venderMoto(${moto.id})" class="text-yellow-400 hover:text-white font-medium ml-3">💰 Vender</button>`);
                 }
@@ -338,6 +428,7 @@
                         <td class="px-6 py-4"><img src="${foto}" class="w-16 h-10 object-cover rounded" alt=""></td>
                         <td class="px-6 py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${moto.status}</span></td>
                         <td class="px-6 py-4 font-bold text-gray-100 uppercase">${moto.marca} ${moto.modelo} <span class="text-gray-500 font-normal normal-case">(${moto.ano})</span></td>
+                        <td class="px-6 py-4 text-gray-400 font-mono text-xs">${moto.chassi || '—'}</td>
                         <td class="px-6 py-4 text-yellow-500 font-bold">${formatarPreco(moto.preco)}</td>
                         <td class="px-6 py-4 text-right">${acoes.join('')}</td>
                     </tr>
@@ -363,6 +454,7 @@
 
             const fd = new FormData(form);
             if (!fd.get('data_venda')) fd.delete('data_venda');
+            if (!fd.get('chassi')) fd.delete('chassi');
 
             try {
                 const resp = await fetch(API_BASE + "/motos", {
@@ -425,6 +517,55 @@
                 }
 
                 await carregarMotos();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ================= FATURAMENTO =================
+        function atualizarFaturamento() {
+            const mes = document.getElementById('filtro-mes-faturamento').value;
+            const vendidas = motos.filter(m => m.status === "VENDIDA" && m.ciclo === mes);
+
+            const faturamento = vendidas.reduce((s, m) => s + (Number(m.preco) || 0), 0);
+            const ganhos = vendidas.length * LUCRO_FIXO;
+
+            let somaPct = 0;
+            vendidas.forEach(m => {
+                const preco = Number(m.preco) || 0;
+                if (preco > 0) somaPct += (LUCRO_FIXO / preco) * 100;
+            });
+            const lucroMedioPct = vendidas.length ? somaPct / vendidas.length : 0;
+
+            document.getElementById('fat-valor').innerText = formatarPreco(faturamento);
+            document.getElementById('fat-ganhos').innerText = formatarPreco(ganhos);
+            document.getElementById('fat-qtd').innerText = vendidas.length;
+            document.getElementById('fat-lucro-pct').innerText = formatarPct(lucroMedioPct);
+        }
+
+        async function exportarCSV() {
+            const mes = document.getElementById('filtro-mes-faturamento').value;
+            try {
+                const resp = await fetch(API_BASE + "/exportar?mes=" + mes, {
+                    headers: { "Authorization": "Bearer " + getToken() }
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        throw new Error("Sessão expirada ou sem permissão. Faça login novamente.");
+                    }
+                    throw new Error(await mensagemDeErro(resp));
+                }
+
+                const blob = await resp.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "relatorio_mes_" + mes + ".csv";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
             } catch (err) {
                 alert(err.message);
             }

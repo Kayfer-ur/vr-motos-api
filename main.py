@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from auth import hash_senha
 from database import Base, SessionLocal, engine
 from models import Usuario
+import routers.exportar
 import routers.login
 import routers.motos
 
@@ -55,6 +56,7 @@ app.mount("/static", StaticFiles(directory=RAIZ / "static"), name="static")
 
 app.include_router(routers.login.router)
 app.include_router(routers.motos.router)
+app.include_router(routers.exportar.router)
 
 
 @app.get("/health")

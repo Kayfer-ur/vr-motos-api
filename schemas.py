@@ -28,6 +28,7 @@ class MotoSaida(BaseModel):
     modelo: str
     ano: int
     cor: str
+    chassi: Optional[str] = None
     preco: float
     status: str
     # URL completa e pronta a usar em <img src="...">
