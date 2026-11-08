@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from sqlalchemy import text
+
 from auth import hash_senha
 from database import Base, SessionLocal, engine
 from models import Usuario
@@ -14,6 +16,17 @@ import routers.motos
 
 # Cria as tabelas na primeira execução (não altera tabelas já existentes)
 Base.metadata.create_all(bind=engine)
+
+
+def _migrar_colunas():
+    """Adiciona colunas novas a tabelas já existentes (idempotente)."""
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS chassi VARCHAR(30)"))
+        conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2)"))
+        conn.execute(text("UPDATE motos SET preco_custo = preco - 700 WHERE preco_custo IS NULL"))
+
+
+_migrar_colunas()
 
 
 def _criar_usuarios_padrao():
