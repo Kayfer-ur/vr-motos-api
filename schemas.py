@@ -45,14 +45,3 @@ class MotoEdicao(BaseModel):
     modelo: Optional[str] = None
     chassi: Optional[str] = None
     preco: Optional[float] = None
-
-
-# ---------- Faturamento mensal (manual) ----------
-class FaturamentoEntrada(BaseModel):
-    mes: str
-    valor: float
-
-
-class FaturamentoSaida(BaseModel):
-    mes: str
-    valor: float

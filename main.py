@@ -11,9 +11,9 @@ from auth import hash_senha
 from database import Base, SessionLocal, engine
 from models import Usuario
 import routers.exportar
-import routers.faturamento
 import routers.login
 import routers.motos
+import routers.relatorio
 
 # Cria as tabelas na primeira execução (não altera tabelas já existentes)
 Base.metadata.create_all(bind=engine)
@@ -74,7 +74,7 @@ app.mount("/static", StaticFiles(directory=RAIZ / "static"), name="static")
 app.include_router(routers.login.router)
 app.include_router(routers.motos.router)
 app.include_router(routers.exportar.router)
-app.include_router(routers.faturamento.router)
+app.include_router(routers.relatorio.router)
 
 
 @app.get("/health")

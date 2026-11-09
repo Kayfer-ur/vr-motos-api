@@ -49,11 +49,3 @@ class Foto(Base):
     caminho = Column(String(255), nullable=False)  # ex.: "static/fotos/abc123.jpg"
 
     moto = relationship("Moto", back_populates="fotos")
-
-
-class FaturamentoMensal(Base):
-    __tablename__ = "faturamento_mensal"
-
-    id = Column(Integer, primary_key=True, index=True)
-    mes = Column(String(10), unique=True, nullable=False, index=True)  # ex.: "11", "12"
-    valor = Column(Numeric(12, 2), nullable=False, default=0)

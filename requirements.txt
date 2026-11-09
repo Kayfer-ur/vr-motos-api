@@ -8,3 +8,4 @@ passlib
 PyJWT
 email-validator
 cloudinary
+reportlab
