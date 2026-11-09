@@ -38,3 +38,21 @@ class MotoSaida(BaseModel):
     ciclo: Optional[str] = None
     data_cadastro: Optional[str] = None
     data_venda: Optional[str] = None
+
+
+# ---------- Edição de motos (admin) ----------
+class MotoEdicao(BaseModel):
+    modelo: Optional[str] = None
+    chassi: Optional[str] = None
+    preco: Optional[float] = None
+
+
+# ---------- Faturamento mensal (manual) ----------
+class FaturamentoEntrada(BaseModel):
+    mes: str
+    valor: float
+
+
+class FaturamentoSaida(BaseModel):
+    mes: str
+    valor: float

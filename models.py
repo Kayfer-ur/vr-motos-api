@@ -27,7 +27,7 @@ class Moto(Base):
     chassi = Column(String(30), nullable=True)
     preco = Column(Numeric(10, 2), nullable=False)
     preco_custo = Column(Numeric(10, 2), nullable=True)
-    status = Column(String(20), nullable=False, default="DISPONIVEL")  # DISPONIVEL | VENDIDA
+    status = Column(String(20), nullable=False, default="Estoque")  # Estoque | Vendido
     # Guarda o caminho relativo da foto principal (a 1ª enviada).
     imagem_url = Column(String(255), nullable=True)
     data_cadastro = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -49,3 +49,11 @@ class Foto(Base):
     caminho = Column(String(255), nullable=False)  # ex.: "static/fotos/abc123.jpg"
 
     moto = relationship("Moto", back_populates="fotos")
+
+
+class FaturamentoMensal(Base):
+    __tablename__ = "faturamento_mensal"
+
+    id = Column(Integer, primary_key=True, index=True)
+    mes = Column(String(10), unique=True, nullable=False, index=True)  # ex.: "11", "12"
+    valor = Column(Numeric(12, 2), nullable=False, default=0)

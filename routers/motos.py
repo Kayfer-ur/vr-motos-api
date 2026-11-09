@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from auth import requer_admin
 from database import get_db
 from models import Foto, Moto
-from schemas import MotoSaida
+from schemas import MotoEdicao, MotoSaida
 
 
 def _configurar_cloudinary():
@@ -41,7 +41,7 @@ router = APIRouter(prefix="/motos", tags=["Motos"])
 PASTA_FOTOS = Path(__file__).resolve().parent.parent / "static" / "fotos"
 PASTA_FOTOS.mkdir(parents=True, exist_ok=True)
 
-STATUS_VALIDOS = {"DISPONIVEL", "VENDIDA"}
+STATUS_VALIDOS = {"Estoque", "Vendido"}
 
 # Lucro fixo por moto vendida
 LUCRO_FIXO = Decimal("700")
@@ -133,7 +133,7 @@ def cadastrar_moto(
     cor: str = Form(...),
     chassi: Optional[str] = Form(None),
     preco: Decimal = Form(...),
-    status: str = Form("DISPONIVEL"),
+    status: str = Form("Estoque"),
     data_venda: Optional[date] = Form(None),
     imagens: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
@@ -141,7 +141,7 @@ def cadastrar_moto(
     """Cadastro via FormData (multipart), com uma ou mais fotos."""
     status = status.upper()
     if status not in STATUS_VALIDOS:
-        raise HTTPException(status_code=400, detail="Status deve ser DISPONIVEL ou VENDIDA.")
+        raise HTTPException(status_code=400, detail="Status deve ser Estoque ou Vendido.")
 
     if not imagens:
         raise HTTPException(status_code=400, detail="Envie pelo menos uma foto.")
@@ -170,14 +170,34 @@ def cadastrar_moto(
     return _montar_saida(moto, request)
 
 
-@router.patch("/{moto_id}/vender", response_model=MotoSaida, dependencies=[Depends(requer_admin)])
-def vender_moto(moto_id: int, request: Request, db: Session = Depends(get_db)):
-    """Marca a moto como VENDIDA e grava a data_venda (alimenta o Dashboard do front-end)."""
+@router.patch("/{moto_id}", response_model=MotoSaida, dependencies=[Depends(requer_admin)])
+def editar_moto(moto_id: int, dados: MotoEdicao, request: Request, db: Session = Depends(get_db)):
+    """Edita apenas Nome (modelo), Chassi e Valor. Exclusivo para admin."""
     moto = db.query(Moto).filter(Moto.id == moto_id).first()
     if moto is None:
         raise HTTPException(status_code=404, detail="Moto não encontrada.")
 
-    moto.status = "VENDIDA"
+    if dados.modelo is not None:
+        moto.modelo = dados.modelo
+    if dados.chassi is not None:
+        moto.chassi = dados.chassi
+    if dados.preco is not None:
+        moto.preco = Decimal(str(dados.preco))
+        moto.preco_custo = moto.preco - LUCRO_FIXO
+
+    db.commit()
+    db.refresh(moto)
+    return _montar_saida(moto, request)
+
+
+@router.patch("/{moto_id}/vender", response_model=MotoSaida, dependencies=[Depends(requer_admin)])
+def vender_moto(moto_id: int, request: Request, db: Session = Depends(get_db)):
+    """Marca a moto como Vendido e grava a data_venda (alimenta o Dashboard do front-end)."""
+    moto = db.query(Moto).filter(Moto.id == moto_id).first()
+    if moto is None:
+        raise HTTPException(status_code=404, detail="Moto não encontrada.")
+
+    moto.status = "Vendido"
     if moto.data_venda is None:
         moto.data_venda = datetime.utcnow()
     db.commit()

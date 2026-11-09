@@ -29,7 +29,7 @@ def exportar_relatorio(
     _usuario: dict = Depends(get_usuario_atual),
 ):
     """Gera um CSV com as motos vendidas no ciclo (Mês VR) selecionado e os lucros."""
-    motos = db.query(Moto).filter(Moto.status == "VENDIDA").all()
+    motos = db.query(Moto).filter(Moto.status == "Vendido").all()
     vendidas = [m for m in motos if _ciclo(m.data_venda) == mes]
 
     saida = io.StringIO()

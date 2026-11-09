@@ -11,6 +11,7 @@ from auth import hash_senha
 from database import Base, SessionLocal, engine
 from models import Usuario
 import routers.exportar
+import routers.faturamento
 import routers.login
 import routers.motos
 
@@ -18,15 +19,18 @@ import routers.motos
 Base.metadata.create_all(bind=engine)
 
 
-def _migrar_colunas():
-    """Adiciona colunas novas a tabelas já existentes (idempotente)."""
+def _migrar():
+    """Migrações idempotentes para tabelas já existentes."""
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS chassi VARCHAR(30)"))
         conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2)"))
         conn.execute(text("UPDATE motos SET preco_custo = preco - 700 WHERE preco_custo IS NULL"))
+        # Conversão dos status antigos para os novos
+        conn.execute(text("UPDATE motos SET status = 'Estoque' WHERE status = 'DISPONIVEL'"))
+        conn.execute(text("UPDATE motos SET status = 'Vendido' WHERE status = 'VENDIDA'"))
 
 
-_migrar_colunas()
+_migrar()
 
 
 def _criar_usuarios_padrao():
@@ -70,6 +74,7 @@ app.mount("/static", StaticFiles(directory=RAIZ / "static"), name="static")
 app.include_router(routers.login.router)
 app.include_router(routers.motos.router)
 app.include_router(routers.exportar.router)
+app.include_router(routers.faturamento.router)
 
 
 @app.get("/health")
