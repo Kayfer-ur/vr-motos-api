@@ -20,6 +20,7 @@ router = APIRouter(prefix="/relatorio", tags=["Relatórios"])
 SELIC_MENSAL = 1.07    # % ao mês
 CAPITAL = 120000.0     # capital comparativo fixo
 LUCRO_POR_MOTO = 700.0
+ORCAMENTO_COMPRA = 90000.0  # limite para compra de motos
 
 COR_OURO = colors.HexColor("#ca8a04")
 COR_FUNDO = colors.HexColor("#161616")
@@ -52,6 +53,8 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
     lucro_vendas = len(vendidas) * LUCRO_POR_MOTO
     rend_selic = _rendimento_selic()
     diferenca = lucro_vendas - rend_selic
+    capital_parado = sum(float(m.preco or 0) for m in estoque)
+    disponivel_compras = ORCAMENTO_COMPRA - capital_parado
 
     if diferenca > 0:
         veredito = "O giro da loja compensa mais"
@@ -103,6 +106,27 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
     story.append(tc)
+    story.append(Spacer(1, 0.5 * cm))
+
+    # ---- Gestão de compras (sempre presente) ----
+    story.append(Paragraph("Gestão de Compras", secao))
+    compras = [
+        ["Orçamento Total", _brl(ORCAMENTO_COMPRA)],
+        ["Capital Parado (Em Estoque)", _brl(capital_parado)],
+        ["Disponível para Compras", _brl(disponivel_compras)],
+    ]
+    tg = Table(compras, colWidths=[7 * cm, 8 * cm])
+    tg.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("TEXTCOLOR", (0, 0), (0, -1), colors.grey),
+        ("TEXTCOLOR", (1, 0), (1, -1), colors.white),
+        ("BACKGROUND", (0, 0), (-1, -1), COR_FUNDO),
+        ("GRID", (0, 0), (-1, -1), 0.3, COR_LINHA),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(tg)
     story.append(Spacer(1, 0.5 * cm))
 
     if detalhado:

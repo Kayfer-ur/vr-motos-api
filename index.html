@@ -47,7 +47,7 @@
     <div id="sistema-principal" class="hidden flex-col min-h-screen">
         <header class="bg-[#1a1a1a] text-white p-4 border-b border-[#2a2a2a] sticky top-0 z-40 shadow-md">
             <div class="max-w-[1400px] mx-auto flex justify-between items-center">
-                <div class="font-black text-2xl text-yellow-500 tracking-tighter">🏍️ VR MoTos</div>
+                <div class="font-black text-xl sm:text-2xl text-yellow-500 tracking-tighter">🏍️ VR MoTos</div>
 
                 <!-- Menu desktop -->
                 <nav class="hidden md:flex items-center space-x-2 sm:space-x-6">
@@ -91,7 +91,7 @@
             <div id="tela-estoque" class="w-full">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-bold text-white tracking-tight">Estoque de Motos</h2>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Estoque de Motos</h2>
                     </div>
                     <button id="btn-cadastrar" onclick="abrirModalCadastro()"
                         class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
@@ -115,18 +115,23 @@
                     </div>
                 </div>
 
+                <div class="mb-4">
+                    <input id="busca-estoque" type="text" oninput="renderizarMotos()" placeholder="🔍 Pesquisar por Chassi..."
+                        class="w-full sm:w-80 bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
+                </div>
+
                 <div id="estoque-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg mb-4"></div>
 
                 <div class="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] shadow-2xl overflow-x-auto">
                     <table class="w-full min-w-[760px] text-left text-sm text-gray-300 whitespace-nowrap">
                         <thead class="bg-[#161616] text-xs uppercase text-gray-500 font-bold border-b border-[#2a2a2a]">
                             <tr>
-                                <th class="px-6 py-5">Foto</th>
-                                <th class="px-6 py-5">Status</th>
-                                <th class="px-6 py-5">Veículo</th>
-                                <th class="px-6 py-5">Chassi</th>
-                                <th class="px-6 py-5">Valor (R$)</th>
-                                <th class="px-6 py-5 text-right">Ações</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Foto</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Status</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Veículo</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Chassi</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Valor (R$)</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-estoque" class="divide-y divide-[#2a2a2a]">
@@ -139,20 +144,25 @@
             <!-- ================= Tela Motos Vendidas ================= -->
             <div id="tela-vendidas" class="hidden">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-bold text-white tracking-tight">Motos Vendidas</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Motos Vendidas</h2>
                     <p class="text-gray-400 text-sm mt-1">Veículos que já saíram do estoque</p>
+                </div>
+
+                <div class="mb-4">
+                    <input id="busca-vendidas" type="text" oninput="renderizarMotos()" placeholder="🔍 Pesquisar por Chassi..."
+                        class="w-full sm:w-80 bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
                 </div>
 
                 <div class="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] shadow-2xl overflow-x-auto">
                     <table class="w-full min-w-[760px] text-left text-sm text-gray-300 whitespace-nowrap">
                         <thead class="bg-[#161616] text-xs uppercase text-gray-500 font-bold border-b border-[#2a2a2a]">
                             <tr>
-                                <th class="px-6 py-5">Foto</th>
-                                <th class="px-6 py-5">Status</th>
-                                <th class="px-6 py-5">Veículo</th>
-                                <th class="px-6 py-5">Chassi</th>
-                                <th class="px-6 py-5">Valor (R$)</th>
-                                <th class="px-6 py-5 text-right">Ações</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Foto</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Status</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Veículo</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Chassi</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Valor (R$)</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-vendidas" class="divide-y divide-[#2a2a2a]">
@@ -166,7 +176,7 @@
             <div id="tela-faturamento" class="hidden">
                 <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 class="text-3xl font-bold text-white tracking-tight">Rentabilidade (Mês VR)</h2>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Rentabilidade (Mês VR)</h2>
                         <p class="text-gray-400 text-sm mt-1">Compare o giro da loja com a renda fixa (Selic)</p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -237,7 +247,7 @@
             <!-- ================= Tela Dashboard Mês VR ================= -->
             <div id="tela-dashboard" class="hidden">
                 <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <h2 class="text-3xl font-bold text-white tracking-tight">Painel Financeiro (Mês VR)</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Painel Financeiro (Mês VR)</h2>
                     <div class="flex items-center gap-2">
                         <label class="text-sm text-gray-400">Filtrar Ciclo:</label>
                         <select id="filtro-mes" onchange="atualizarDashboard()"
@@ -248,11 +258,23 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 font-medium mb-2">Capital em Estoque (Dinheiro Parado)</p>
-                        <p id="dash-valor" class="text-4xl font-black text-yellow-500">R$ 0,00</p>
+                <!-- Mini-painel de gestão de compras -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Orçamento Total</p>
+                        <p id="dash-orcamento-total" class="text-2xl font-black text-white">R$ 90.000,00</p>
                     </div>
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Capital Parado (Em Estoque)</p>
+                        <p id="dash-capital-parado" class="text-2xl font-black text-yellow-500">R$ 0,00</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Disponível para Compras</p>
+                        <p id="dash-disponivel-compras" class="text-2xl font-black text-green-400">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
                         <p class="text-gray-400 font-medium mb-2">Motos Vendidas no Ciclo</p>
                         <p id="dash-qtd" class="text-4xl font-black text-white">0</p>
@@ -491,8 +513,18 @@
         }
 
         function renderizarMotos() {
-            renderizarTabela('tabela-estoque', motos.filter(m => m.status === 'Estoque'));
-            renderizarTabela('tabela-vendidas', motos.filter(m => m.status === 'Vendido'));
+            const buscaEstoque = (document.getElementById('busca-estoque')?.value || '').toLowerCase().trim();
+            const buscaVendidas = (document.getElementById('busca-vendidas')?.value || '').toLowerCase().trim();
+
+            const estoque = motos.filter(m =>
+                m.status === 'Estoque' && (!buscaEstoque || (m.chassi || '').toLowerCase().includes(buscaEstoque))
+            );
+            const vendidas = motos.filter(m =>
+                m.status === 'Vendido' && (!buscaVendidas || (m.chassi || '').toLowerCase().includes(buscaVendidas))
+            );
+
+            renderizarTabela('tabela-estoque', estoque);
+            renderizarTabela('tabela-vendidas', vendidas);
         }
 
         function renderizarTabela(tbodyId, lista) {
@@ -527,12 +559,12 @@
 
                 tabela.innerHTML += `
                     <tr class="hover:bg-[#242424] transition-colors border-t border-[#2a2a2a]">
-                        <td class="px-6 py-4"><img src="${foto}" class="w-16 h-10 object-cover rounded" alt=""></td>
-                        <td class="px-6 py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${moto.status}</span></td>
-                        <td class="px-6 py-4 font-bold text-gray-100 uppercase">${moto.marca} ${moto.modelo} <span class="text-gray-500 font-normal normal-case">(${moto.ano})</span></td>
-                        <td class="px-6 py-4 text-gray-400 font-mono text-xs">${moto.chassi || '—'}</td>
-                        <td class="px-6 py-4 text-yellow-500 font-bold">${formatarPreco(moto.preco)}</td>
-                        <td class="px-6 py-4 text-right">${acoes.join('')}</td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4"><img src="${foto}" class="w-16 h-10 object-cover rounded" alt=""></td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${moto.status}</span></td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4 font-bold text-gray-100 uppercase">${moto.marca} ${moto.modelo} <span class="text-gray-500 font-normal normal-case">(${moto.ano})</span></td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4 text-gray-400 font-mono text-xs">${moto.chassi || '—'}</td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4 text-yellow-500 font-bold">${formatarPreco(moto.preco)}</td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4 text-right">${acoes.join('')}</td>
                     </tr>
                 `;
             });
@@ -755,27 +787,28 @@
             const capitalParado = estoque.reduce((s, m) => s + (Number(m.preco) || 0), 0);
             const disponivel = ORCAMENTO_COMPRA - capitalParado;
 
-            document.getElementById('orcamento-total').innerText = formatarPreco(ORCAMENTO_COMPRA);
-            document.getElementById('capital-parado').innerText = formatarPreco(capitalParado);
-
-            const dispEl = document.getElementById('disponivel-compras');
-            dispEl.innerText = formatarPreco(disponivel);
-            dispEl.className = "text-2xl font-black " + (disponivel >= 0 ? "text-green-400" : "text-red-400");
+            ['orcamento-total', 'dash-orcamento-total'].forEach(id => {
+                document.getElementById(id).innerText = formatarPreco(ORCAMENTO_COMPRA);
+            });
+            ['capital-parado', 'dash-capital-parado'].forEach(id => {
+                document.getElementById(id).innerText = formatarPreco(capitalParado);
+            });
+            ['disponivel-compras', 'dash-disponivel-compras'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerText = formatarPreco(disponivel);
+                el.className = "text-2xl font-black " + (disponivel >= 0 ? "text-green-400" : "text-red-400");
+            });
         }
 
         // ================= DASHBOARD =================
         function atualizarDashboard() {
             const mes = document.getElementById('filtro-mes').value;
-            let totalEstoque = 0;
             let vendidas = 0;
 
             motos.forEach(m => {
-                if (m.status === "Estoque") totalEstoque += Number(m.preco) || 0;
                 if (m.status === "Vendido" && m.ciclo === mes) vendidas++;
             });
 
-            totalEstoque = Math.round(totalEstoque * 100) / 100;
-            document.getElementById('dash-valor').innerText = formatarPreco(totalEstoque);
             document.getElementById('dash-qtd').innerText = vendidas;
         }
 
