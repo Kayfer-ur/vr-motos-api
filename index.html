@@ -99,6 +99,22 @@
                     </button>
                 </div>
 
+                <!-- Mini-painel de gestão de compras -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Orçamento Total</p>
+                        <p id="orcamento-total" class="text-2xl font-black text-white">R$ 90.000,00</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Capital Parado (Em Estoque)</p>
+                        <p id="capital-parado" class="text-2xl font-black text-yellow-500">R$ 0,00</p>
+                    </div>
+                    <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 text-sm mb-1">Disponível para Compras</p>
+                        <p id="disponivel-compras" class="text-2xl font-black text-green-400">R$ 0,00</p>
+                    </div>
+                </div>
+
                 <div id="estoque-erro" class="hidden bg-red-900/30 border border-red-800 text-red-400 text-sm text-center p-3 rounded-lg mb-4"></div>
 
                 <div class="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] shadow-2xl overflow-x-auto">
@@ -168,8 +184,8 @@
                     <!-- Painel A: Selic -->
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
                         <p class="text-gray-400 font-medium mb-2">Rendimento Selic</p>
-                        <p id="painel-selic" class="text-4xl font-black text-blue-400">R$ 963,00</p>
-                        <p class="text-gray-500 text-sm mt-2">R$ 90.000,00 a 1,07% ao mês</p>
+                        <p id="painel-selic" class="text-4xl font-black text-blue-400">R$ 1.284,00</p>
+                        <p class="text-gray-500 text-sm mt-2">R$ 120.000,00 a 1,07% ao mês</p>
                     </div>
                     <!-- Painel B: Motos -->
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
@@ -354,7 +370,8 @@
         const USER_KEY = "vrmotos_user";
         const LUCRO_FIXO = 700;
         const SELIC_MENSAL = 1.07;        // % ao mês
-        const VALOR_INVESTIDO = 90000;    // R$ capital comparativo
+        const VALOR_INVESTIDO = 120000;   // R$ base da rentabilidade (comparativo Selic)
+        const ORCAMENTO_COMPRA = 90000;   // R$ limite para compra de motos
 
         let motos = [];
         let fotosAtuais = [];
@@ -462,6 +479,7 @@
                 if (!resp.ok) throw new Error(await mensagemDeErro(resp));
                 motos = await resp.json();
                 renderizarMotos();
+                atualizarPainelCompras();
                 atualizarDashboard();
                 atualizarFaturamento();
             } catch (err) {
@@ -729,6 +747,20 @@
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
+        }
+
+        // ================= PAINEL DE COMPRAS =================
+        function atualizarPainelCompras() {
+            const estoque = motos.filter(m => m.status === "Estoque");
+            const capitalParado = estoque.reduce((s, m) => s + (Number(m.preco) || 0), 0);
+            const disponivel = ORCAMENTO_COMPRA - capitalParado;
+
+            document.getElementById('orcamento-total').innerText = formatarPreco(ORCAMENTO_COMPRA);
+            document.getElementById('capital-parado').innerText = formatarPreco(capitalParado);
+
+            const dispEl = document.getElementById('disponivel-compras');
+            dispEl.innerText = formatarPreco(disponivel);
+            dispEl.className = "text-2xl font-black " + (disponivel >= 0 ? "text-green-400" : "text-red-400");
         }
 
         // ================= DASHBOARD =================

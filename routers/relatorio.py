@@ -18,7 +18,7 @@ from models import Moto
 router = APIRouter(prefix="/relatorio", tags=["Relatórios"])
 
 SELIC_MENSAL = 1.07    # % ao mês
-CAPITAL = 90000.0      # capital comparativo fixo
+CAPITAL = 120000.0     # capital comparativo fixo
 LUCRO_POR_MOTO = 700.0
 
 COR_OURO = colors.HexColor("#ca8a04")

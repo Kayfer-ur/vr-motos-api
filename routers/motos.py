@@ -139,7 +139,6 @@ def cadastrar_moto(
     db: Session = Depends(get_db),
 ):
     """Cadastro via FormData (multipart), com uma ou mais fotos."""
-    status = status.upper()
     if status not in STATUS_VALIDOS:
         raise HTTPException(status_code=400, detail="Status deve ser Estoque ou Vendido.")
 
