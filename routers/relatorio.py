@@ -18,7 +18,7 @@ from models import Moto
 router = APIRouter(prefix="/relatorio", tags=["Relatórios"])
 
 SELIC_MENSAL = 1.07    # % ao mês
-CAPITAL = 120000.0     # capital comparativo
+CAPITAL = 120000.0     # capital aplicado (base do comparativo)
 LUCRO_POR_MOTO = 700.0
 ORCAMENTO_COMPRA = 90000.0
 
@@ -32,6 +32,7 @@ MARGEM = 1.6 * cm
 
 
 def _ciclo(data_venda):
+    """Mesma regra do 'Mês VR': dia >= 21 pertence ao ciclo (mês) seguinte."""
     if data_venda is None:
         return None
     if data_venda.day >= 21:
@@ -40,7 +41,20 @@ def _ciclo(data_venda):
 
 
 def _brl(v):
+    """Máscara universal de moeda brasileira: R$ 18.000,00."""
+    v = float(v or 0)
     return "R$ " + f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _pct(v):
+    """Formata percentual no padrão brasileiro: 1,17%."""
+    v = float(v or 0)
+    return f"{v:.2f}".replace(".", ",") + "%"
+
+
+def _upper(v):
+    """Padroniza textos de montadoras/modelos/cor/chassi em maiúsculas."""
+    return (v or "").strip().upper() or "—"
 
 
 def _rendimento_selic():
@@ -55,7 +69,7 @@ def _cabecalho_rodape(canvas, doc):
     canvas.drawString(MARGEM, PAG_H - MARGEM + 0.55 * cm, "VR Multimarcas")
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(colors.grey)
-    canvas.drawRightString(PAG_W - MARGEM, PAG_H - MARGEM + 0.55 * cm, "Relatório de Rentabilidade")
+    canvas.drawRightString(PAG_W - MARGEM, PAG_H - MARGEM + 0.55 * cm, "Relatório Executivo")
     canvas.setStrokeColor(COR_OURO)
     canvas.setLineWidth(1.2)
     canvas.line(MARGEM, PAG_H - MARGEM, PAG_W - MARGEM, PAG_H - MARGEM)
@@ -96,6 +110,7 @@ def _tabela_motos(data, larguras):
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
         ("GRID", (0, 0), (-1, -1), 0.3, COR_LINHA),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
@@ -117,13 +132,15 @@ def _montar_pdf(mes: str, db: Session) -> bytes:
     diferenca = lucro_vendas - rend_selic
     capital_alocado = sum(float(m.preco or 0) for m in estoque)
     disponivel_compras = ORCAMENTO_COMPRA - capital_alocado
+    roi = (lucro_vendas / CAPITAL) * 100 if CAPITAL else 0.0
 
+    # Comparativo de custo de oportunidade (vocabulário executivo)
     if diferenca > 0:
-        comparativo_texto = f"O rendimento da loja foi {_brl(diferenca)} acima da Selic"
+        comparativo_texto = f"Superávit de Performance vs. Taxa Selic: + {_brl(diferenca)} (Alpha Positivo)"
     elif diferenca < 0:
-        comparativo_texto = f"O rendimento da loja foi {_brl(abs(diferenca))} abaixo da Selic"
+        comparativo_texto = f"Déficit de Performance vs. Taxa Selic: - {_brl(abs(diferenca))} (Alpha Negativo)"
     else:
-        comparativo_texto = "O rendimento da loja foi igual ao da Selic"
+        comparativo_texto = "Performance Neutra vs. Taxa Selic (Alpha Zero)"
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -140,62 +157,77 @@ def _montar_pdf(mes: str, db: Session) -> bytes:
     sub = ParagraphStyle("Sub", parent=styles["Normal"], fontSize=10, textColor=colors.grey, spaceAfter=16)
     secao = ParagraphStyle("Secao", parent=styles["Heading2"], fontSize=13, textColor=COR_OURO, spaceBefore=14, spaceAfter=8)
     corpo = ParagraphStyle("Corpo", parent=styles["Normal"], fontSize=10, leading=15, textColor=colors.white)
+    # Chassi em fonte monoespaçada, forçando a separação visual da coluna "Cor"
+    chassi_style = ParagraphStyle("Chassi", parent=styles["Normal"], fontName="Courier", fontSize=7, textColor=colors.white, leading=9)
 
     story = [
         Paragraph(f"Relatório de Rentabilidade — Mês VR {mes}", titulo),
         Paragraph(f"Gerado em {datetime.now().strftime('%d/%m/%Y às %H:%M')}", sub),
     ]
 
-    # Resumo executivo
+    # Resumo Executivo
     story.append(Paragraph("Resumo Executivo", secao))
     story.append(_tabela_chave_valor([
-        ["Motos vendidas no ciclo", str(len(vendidas))],
-        ["Motos em estoque", str(len(estoque))],
-        ["Faturamento total (vendas)", _brl(faturamento)],
-        ["Lucro operacional (R$ 700/moto)", _brl(lucro_vendas)],
+        ["Volume de Vendas (Unidades)", str(len(vendidas))],
+        ["Estoque Atual (Unidades)", str(len(estoque))],
+        ["Receita Bruta (Vendas)", _brl(faturamento)],
+        ["Lucro Operacional", _brl(lucro_vendas)],
+        ["ROI (Retorno sobre o Investimento)", _pct(roi)],
     ]))
     story.append(Spacer(1, 0.4 * cm))
 
-    # Comparativo financeiro
-    story.append(Paragraph("Comparativo Financeiro", secao))
+    # Comparativo de Custo de Oportunidade
+    story.append(Paragraph("Comparativo de Custo de Oportunidade", secao))
     story.append(_tabela_chave_valor([
-        ["Capital aplicado", _brl(CAPITAL)],
-        [f"Rendimento Selic ({SELIC_MENSAL}% a.m.)", _brl(rend_selic)],
-        ["Rendimento da loja (motos)", _brl(lucro_vendas)],
-        ["Comparativo", comparativo_texto],
+        ["Capital Aplicado", _brl(CAPITAL)],
+        [f"Rendimento Selic ({_pct(SELIC_MENSAL)} a.m.)", _brl(rend_selic)],
+        ["Rendimento Operacional (Motos)", _brl(lucro_vendas)],
+        ["Resultado", comparativo_texto],
     ]))
     story.append(Spacer(1, 0.4 * cm))
 
-    # Gestão de compras
-    story.append(Paragraph("Gestão de Compras", secao))
+    # Capital Alocado (Em Estoque)
+    story.append(Paragraph("Capital Alocado (Em Estoque)", secao))
     story.append(_tabela_chave_valor([
         ["Orçamento Total", _brl(ORCAMENTO_COMPRA)],
-        ["Capital Alocado (Em Estoque)", _brl(capital_alocado)],
+        ["Capital Alocado", _brl(capital_alocado)],
         ["Disponível para Compras", _brl(disponivel_compras)],
     ]))
     story.append(Spacer(1, 0.4 * cm))
 
-    # Motos vendidas
-    story.append(Paragraph(f"Motos Vendidas no Mês ({len(vendidas)})", secao))
+    # Vendas realizadas no mês
+    story.append(Paragraph(f"Vendas Realizadas no Mês ({len(vendidas)})", secao))
     if vendidas:
         data_v = [["Marca", "Modelo", "Ano", "Chassi", "Cor", "Preço", "Lucro"]]
         for m in vendidas:
             data_v.append([
-                m.marca, m.modelo, str(m.ano), m.chassi or "—", m.cor or "—",
-                _brl(float(m.preco or 0)), _brl(LUCRO_POR_MOTO),
+                _upper(m.marca),
+                _upper(m.modelo),
+                str(m.ano),
+                Paragraph(_upper(m.chassi), chassi_style),
+                _upper(m.cor),
+                _brl(m.preco),
+                _brl(LUCRO_POR_MOTO),
             ])
-        story.append(_tabela_motos(data_v, [2.0 * cm, 3.0 * cm, 1.2 * cm, 3.0 * cm, 1.6 * cm, 2.4 * cm, 2.4 * cm]))
+        story.append(_tabela_motos(data_v, [2.2 * cm, 2.8 * cm, 1.0 * cm, 3.4 * cm, 1.6 * cm, 2.6 * cm, 2.6 * cm]))
     else:
-        story.append(Paragraph("Nenhuma moto vendida neste ciclo.", corpo))
+        story.append(Paragraph("Nenhuma venda realizada neste ciclo.", corpo))
     story.append(Spacer(1, 0.4 * cm))
 
-    # Motos em estoque
-    story.append(Paragraph(f"Motos em Estoque ({len(estoque)})", secao))
+    # Estoque atual
+    story.append(Paragraph(f"Estoque Atual ({len(estoque)})", secao))
     if estoque:
         data_e = [["Marca", "Modelo", "Ano", "Chassi", "Cor", "Preço"]]
         for m in estoque:
-            data_e.append([m.marca, m.modelo, str(m.ano), m.chassi or "—", m.cor or "—", _brl(float(m.preco or 0))])
-        story.append(_tabela_motos(data_e, [2.2 * cm, 3.4 * cm, 1.4 * cm, 3.2 * cm, 1.8 * cm, 3.0 * cm]))
+            data_e.append([
+                _upper(m.marca),
+                _upper(m.modelo),
+                str(m.ano),
+                Paragraph(_upper(m.chassi), chassi_style),
+                _upper(m.cor),
+                _brl(m.preco),
+            ])
+        story.append(_tabela_motos(data_e, [2.4 * cm, 3.0 * cm, 1.2 * cm, 3.4 * cm, 1.8 * cm, 3.0 * cm]))
     else:
         story.append(Paragraph("Nenhuma moto em estoque.", corpo))
 
@@ -206,7 +238,7 @@ def _montar_pdf(mes: str, db: Session) -> bytes:
 
 @router.get("/detalhado")
 def relatorio_detalhado(mes: str = Query(...), db: Session = Depends(get_db), _u: dict = Depends(get_usuario_atual)):
-    """Relatório detalhado em PDF (único tipo de relatório)."""
+    """Relatório executivo em PDF (único tipo de relatório)."""
     pdf = _montar_pdf(mes, db)
     return Response(
         content=pdf,
