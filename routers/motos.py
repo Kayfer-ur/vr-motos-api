@@ -118,6 +118,24 @@ def _guardar_foto(imagem: UploadFile) -> str:
     return resultado.get("secure_url") or resultado.get("url")
 
 
+def _guardar_nota_fiscal(arquivo: UploadFile) -> str:
+    """Envia a nota fiscal (imagem ou PDF) para o Cloudinary."""
+    if arquivo.content_type:
+        if not (arquivo.content_type.startswith("image/") or arquivo.content_type == "application/pdf"):
+            raise HTTPException(status_code=400, detail="A nota fiscal deve ser uma imagem ou PDF.")
+
+    arquivo.file.seek(0)
+    try:
+        resultado = cloudinary.uploader.upload(
+            arquivo.file,
+            public_id=f"{uuid.uuid4().hex}",
+            resource_type="auto",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao enviar a nota fiscal: {e}")
+    return resultado.get("secure_url") or resultado.get("url")
+
+
 @router.get("", response_model=list[MotoSaida])
 def listar_motos(request: Request, db: Session = Depends(get_db)):
     """Lista todas as motos com URLs prontas para o <img> do HTML e cálculo do Dashboard."""
@@ -214,7 +232,7 @@ def upload_nota_fiscal(moto_id: int, request: Request, nota_fiscal: UploadFile =
     if moto.status != "Vendido":
         raise HTTPException(status_code=400, detail="A nota fiscal só pode ser anexada a motos vendidas.")
 
-    moto.nota_fiscal_url = _guardar_foto(nota_fiscal)
+    moto.nota_fiscal_url = _guardar_nota_fiscal(nota_fiscal)
     db.commit()
     db.refresh(moto)
     return _montar_saida(moto, request)

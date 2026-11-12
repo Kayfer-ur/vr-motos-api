@@ -197,6 +197,7 @@
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
                         <p class="text-gray-400 font-medium mb-2">Rendimento Motos</p>
                         <p id="painel-motos" class="text-4xl font-black text-green-400">R$ 0,00</p>
+                        <p id="painel-motos-pct" class="text-lg font-bold text-green-400 mt-1">0,00% a.m.</p>
                         <p class="text-gray-500 text-sm mt-2">Lucro real das vendas (R$ 700/moto)</p>
                     </div>
                     <!-- Painel: Selic -->
@@ -228,19 +229,11 @@
                     </div>
                 </div>
 
-                <!-- Botões de exportação -->
+                <!-- Botão de relatório -->
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button onclick="exportarCSV()"
-                        class="flex-1 bg-[#1e1e1e] hover:bg-[#2a2a2a] border border-[#333] text-white px-4 py-3 rounded-lg font-bold transition">
-                        ⬇️ Exportar CSV
-                    </button>
                     <button onclick="exportarPDF('detalhado')"
                         class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-3 rounded-lg font-bold transition">
-                        📄 Relatório Detalhado (PDF)
-                    </button>
-                    <button onclick="exportarPDF('resumido')"
-                        class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-3 rounded-lg font-bold transition">
-                        📄 Relatório Resumido (PDF)
+                        📄 Gerar Relatório (PDF)
                     </button>
                 </div>
             </div>
@@ -558,12 +551,10 @@
                     acoes.push(`<button onclick="abrirModalEditar(${moto.id})" class="text-cyan-400 hover:text-white font-medium ml-3">✏️ Editar</button>`);
                     acoes.push(`<button onclick="apagarMoto(${moto.id})" class="text-red-400 hover:text-white font-medium ml-3">🗑️ Apagar</button>`);
                 }
-                if (isAdmin && moto.status === 'Vendido') {
-                    if (moto.nota_fiscal_url) {
-                        acoes.push(`<button onclick="verNotaFiscal('${moto.nota_fiscal_url}')" class="text-purple-400 hover:text-white font-medium ml-3">📄 Ver Nota</button>`);
-                    } else {
-                        acoes.push(`<button onclick="escolherNotaFiscal(${moto.id})" class="text-purple-400 hover:text-white font-medium ml-3">📄 Nota Fiscal</button>`);
-                    }
+                if (moto.nota_fiscal_url) {
+                    acoes.push(`<button onclick="verNotaFiscal('${moto.nota_fiscal_url}')" class="text-purple-400 hover:text-white font-medium ml-3">📄 Ver Nota</button>`);
+                } else if (isAdmin && moto.status === 'Vendido') {
+                    acoes.push(`<button onclick="escolherNotaFiscal(${moto.id})" class="text-purple-400 hover:text-white font-medium ml-3">📄 Nota Fiscal</button>`);
                 }
 
                 tabela.innerHTML += `
@@ -726,9 +717,11 @@
             const rendimentoSelic = VALOR_INVESTIDO * (SELIC_MENSAL / 100);
             const diferenca = rendimentoMotos - rendimentoSelic;
 
-            // Painéis A e B
+            // Painéis
             document.getElementById('painel-selic').innerText = formatarPreco(rendimentoSelic);
             document.getElementById('painel-motos').innerText = formatarPreco(rendimentoMotos);
+            const percentualMotos = VALOR_INVESTIDO > 0 ? (rendimentoMotos / VALOR_INVESTIDO) * 100 : 0;
+            document.getElementById('painel-motos-pct').innerText = percentualMotos.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '% a.m.';
 
             // Comparativo
             const vereditoEl = document.getElementById('comparativo-veredito');
@@ -747,19 +740,6 @@
             document.getElementById('fat-valor').innerText = formatarPreco(faturamento);
             document.getElementById('fat-vendidas-qtd').innerText = vendidas.length;
             document.getElementById('fat-estoque-qtd').innerText = estoque.length;
-        }
-
-        async function exportarCSV() {
-            const mes = document.getElementById('filtro-mes-faturamento').value;
-            try {
-                const resp = await fetch(API_BASE + "/exportar?mes=" + mes, {
-                    headers: { "Authorization": "Bearer " + getToken() }
-                });
-                if (!resp.ok) throw new Error(await mensagemDeErro(resp));
-                await baixarBlob(resp, "relatorio_mes_" + mes + ".csv");
-            } catch (err) {
-                alert(err.message);
-            }
         }
 
         async function exportarPDF(tipo) {
@@ -889,6 +869,6 @@
     </script>
 
     <!-- Input oculto para upload da Nota Fiscal -->
-    <input type="file" id="input-nota-fiscal" accept="image/*" class="hidden" onchange="uploadNotaFiscal()">
+    <input type="file" id="input-nota-fiscal" accept="image/*,application/pdf" class="hidden" onchange="uploadNotaFiscal()">
 </body>
 </html>
