@@ -57,11 +57,11 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
     disponivel_compras = ORCAMENTO_COMPRA - capital_parado
 
     if diferenca > 0:
-        veredito = "O giro da loja compensa mais"
+        comparativo_texto = f"O rendimento da loja foi {_brl(diferenca)} acima da Selic"
     elif diferenca < 0:
-        veredito = "A renda fixa (Selic) compensa mais"
+        comparativo_texto = f"O rendimento da loja foi {_brl(abs(diferenca))} abaixo da Selic"
     else:
-        veredito = "Empate entre os cenários"
+        comparativo_texto = "O rendimento da loja foi igual ao da Selic"
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -91,8 +91,7 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
         ["Capital aplicado", _brl(CAPITAL)],
         [f"Rendimento Selic ({SELIC_MENSAL}% a.m.)", _brl(rend_selic)],
         ["Lucro das vendas (motos)", _brl(lucro_vendas)],
-        ["Diferença (motos − Selic)", _brl(diferenca)],
-        ["Veredito", veredito],
+        ["Comparativo", comparativo_texto],
     ]
     tc = Table(comparativo, colWidths=[7 * cm, 8 * cm])
     tc.setStyle(TableStyle([
@@ -112,7 +111,7 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
     story.append(Paragraph("Gestão de Compras", secao))
     compras = [
         ["Orçamento Total", _brl(ORCAMENTO_COMPRA)],
-        ["Capital Parado (Em Estoque)", _brl(capital_parado)],
+        ["Capital Alocado (Em Estoque)", _brl(capital_parado)],
         ["Disponível para Compras", _brl(disponivel_compras)],
     ]
     tg = Table(compras, colWidths=[7 * cm, 8 * cm])
@@ -188,7 +187,7 @@ def _montar_pdf(mes: str, detalhado: bool, db: Session) -> bytes:
             ["Motos vendidas no mês", str(len(vendidas))],
             ["Motos em estoque", str(len(estoque))],
             ["Faturamento total (vendas)", _brl(faturamento)],
-            ["Veredito final", veredito],
+            ["Comparativo", comparativo_texto],
         ]
         tr = Table(resumo, colWidths=[7 * cm, 8 * cm])
         tr.setStyle(TableStyle([

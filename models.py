@@ -30,6 +30,7 @@ class Moto(Base):
     status = Column(String(20), nullable=False, default="Estoque")  # Estoque | Vendido
     # Guarda o caminho relativo da foto principal (a 1ª enviada).
     imagem_url = Column(String(255), nullable=True)
+    nota_fiscal_url = Column(String(255), nullable=True)  # foto da nota fiscal (só vendidas)
     data_cadastro = Column(DateTime, nullable=False, default=datetime.utcnow)
     data_venda = Column(DateTime, nullable=True)
 

@@ -47,7 +47,7 @@
     <div id="sistema-principal" class="hidden flex-col min-h-screen">
         <header class="bg-[#1a1a1a] text-white p-4 border-b border-[#2a2a2a] sticky top-0 z-40 shadow-md">
             <div class="max-w-[1400px] mx-auto flex justify-between items-center">
-                <div class="font-black text-xl sm:text-2xl text-yellow-500 tracking-tighter">🏍️ VR MoTos</div>
+                <div class="font-black text-xl sm:text-2xl text-yellow-500 tracking-tighter">VR CAPITAL / LINO E NEIA</div>
 
                 <!-- Menu desktop -->
                 <nav class="hidden md:flex items-center space-x-2 sm:space-x-6">
@@ -91,7 +91,7 @@
             <div id="tela-estoque" class="w-full">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Estoque de Motos</h2>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">DISPONÍVEL</h2>
                     </div>
                     <button id="btn-cadastrar" onclick="abrirModalCadastro()"
                         class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
@@ -106,7 +106,7 @@
                         <p id="orcamento-total" class="text-2xl font-black text-white">R$ 90.000,00</p>
                     </div>
                     <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 text-sm mb-1">Capital Parado (Em Estoque)</p>
+                        <p class="text-gray-400 text-sm mb-1">Capital Alocado (Em Estoque)</p>
                         <p id="capital-parado" class="text-2xl font-black text-yellow-500">R$ 0,00</p>
                     </div>
                     <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
@@ -130,12 +130,13 @@
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Status</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Veículo</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Chassi</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Cor</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Valor (R$)</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-estoque" class="divide-y divide-[#2a2a2a]">
-                            <tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
+                            <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -144,7 +145,7 @@
             <!-- ================= Tela Motos Vendidas ================= -->
             <div id="tela-vendidas" class="hidden">
                 <div class="mb-6">
-                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Motos Vendidas</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">VENDIDAS</h2>
                     <p class="text-gray-400 text-sm mt-1">Veículos que já saíram do estoque</p>
                 </div>
 
@@ -161,12 +162,13 @@
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Status</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Veículo</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Chassi</th>
+                                <th class="px-3 py-3 sm:px-6 sm:py-5">Cor</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5">Valor (R$)</th>
                                 <th class="px-3 py-3 sm:px-6 sm:py-5 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-vendidas" class="divide-y divide-[#2a2a2a]">
-                            <tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
+                            <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">A carregar...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -191,23 +193,22 @@
 
                 <!-- Comparativo de Rentabilidade -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- Painel A: Selic -->
-                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 font-medium mb-2">Rendimento Selic</p>
-                        <p id="painel-selic" class="text-4xl font-black text-blue-400">R$ 1.284,00</p>
-                        <p class="text-gray-500 text-sm mt-2">R$ 120.000,00 a 1,07% ao mês</p>
-                    </div>
-                    <!-- Painel B: Motos -->
+                    <!-- Painel: Motos -->
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
                         <p class="text-gray-400 font-medium mb-2">Rendimento Motos</p>
                         <p id="painel-motos" class="text-4xl font-black text-green-400">R$ 0,00</p>
                         <p class="text-gray-500 text-sm mt-2">Lucro real das vendas (R$ 700/moto)</p>
                     </div>
+                    <!-- Painel: Selic -->
+                    <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
+                        <p class="text-gray-400 font-medium mb-2">Rendimento Selic</p>
+                        <p id="painel-selic" class="text-4xl font-black text-blue-400">R$ 1.284,00</p>
+                        <p class="text-gray-500 text-sm mt-2">R$ 120.000,00 a 1,07% ao mês</p>
+                    </div>
                     <!-- Comparativo -->
                     <div class="bg-[#1e1e1e] p-8 rounded-2xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 font-medium mb-3">O que compensa mais</p>
+                        <p class="text-gray-400 font-medium mb-3">Comparativo</p>
                         <p id="comparativo-veredito" class="text-xl font-bold text-white mb-1">—</p>
-                        <p id="comparativo-diferenca" class="text-2xl font-black text-gray-400">R$ 0,00</p>
                     </div>
                 </div>
 
@@ -265,7 +266,7 @@
                         <p id="dash-orcamento-total" class="text-2xl font-black text-white">R$ 90.000,00</p>
                     </div>
                     <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
-                        <p class="text-gray-400 text-sm mb-1">Capital Parado (Em Estoque)</p>
+                        <p class="text-gray-400 text-sm mb-1">Capital Alocado (Em Estoque)</p>
                         <p id="dash-capital-parado" class="text-2xl font-black text-yellow-500">R$ 0,00</p>
                     </div>
                     <div class="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
@@ -336,8 +337,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-1.5">Status</label>
                         <select name="status" class="w-full bg-[#121212] border border-[#333] text-white rounded-lg p-3 focus:border-yellow-500 outline-none">
-                            <option value="Estoque">Estoque</option>
-                            <option value="Vendido">Vendido</option>
+                            <option value="Estoque">DISPONÍVEL</option>
+                            <option value="Vendido">VENDIDA</option>
                         </select>
                     </div>
                     <div>
@@ -508,7 +509,7 @@
                 erroBox.textContent = "Não foi possível carregar as motos: " + err.message;
                 erroBox.classList.remove('hidden');
                 document.getElementById('tabela-estoque').innerHTML =
-                    '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Erro ao carregar.</td></tr>';
+                    '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Erro ao carregar.</td></tr>';
             }
         }
 
@@ -532,7 +533,7 @@
             tabela.innerHTML = '';
 
             if (lista.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Nenhuma moto aqui.</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Nenhuma moto aqui.</td></tr>';
                 return;
             }
 
@@ -546,6 +547,7 @@
                 const corStatus = moto.status === 'Estoque'
                     ? 'text-green-400 bg-green-900/40'
                     : 'text-red-400 bg-red-900/40';
+                const statusLabel = moto.status === 'Estoque' ? 'DISPONÍVEL' : 'VENDIDA';
 
                 const acoes = [];
                 acoes.push(`<button onclick="abrirModalFotos('${arrStr}')" class="text-blue-400 hover:text-white font-medium">📷 Galeria</button>`);
@@ -556,13 +558,21 @@
                     acoes.push(`<button onclick="abrirModalEditar(${moto.id})" class="text-cyan-400 hover:text-white font-medium ml-3">✏️ Editar</button>`);
                     acoes.push(`<button onclick="apagarMoto(${moto.id})" class="text-red-400 hover:text-white font-medium ml-3">🗑️ Apagar</button>`);
                 }
+                if (isAdmin && moto.status === 'Vendido') {
+                    if (moto.nota_fiscal_url) {
+                        acoes.push(`<button onclick="verNotaFiscal('${moto.nota_fiscal_url}')" class="text-purple-400 hover:text-white font-medium ml-3">📄 Ver Nota</button>`);
+                    } else {
+                        acoes.push(`<button onclick="escolherNotaFiscal(${moto.id})" class="text-purple-400 hover:text-white font-medium ml-3">📄 Nota Fiscal</button>`);
+                    }
+                }
 
                 tabela.innerHTML += `
                     <tr class="hover:bg-[#242424] transition-colors border-t border-[#2a2a2a]">
                         <td class="px-3 py-3 sm:px-6 sm:py-4"><img src="${foto}" class="w-16 h-10 object-cover rounded" alt=""></td>
-                        <td class="px-3 py-3 sm:px-6 sm:py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${moto.status}</span></td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4"><span class="${corStatus} text-xs px-2 py-1 rounded-md font-semibold">${statusLabel}</span></td>
                         <td class="px-3 py-3 sm:px-6 sm:py-4 font-bold text-gray-100 uppercase">${moto.marca} ${moto.modelo} <span class="text-gray-500 font-normal normal-case">(${moto.ano})</span></td>
                         <td class="px-3 py-3 sm:px-6 sm:py-4 text-gray-400 font-mono text-xs">${moto.chassi || '—'}</td>
+                        <td class="px-3 py-3 sm:px-6 sm:py-4 text-gray-300">${moto.cor || '—'}</td>
                         <td class="px-3 py-3 sm:px-6 sm:py-4 text-yellow-500 font-bold">${formatarPreco(moto.preco)}</td>
                         <td class="px-3 py-3 sm:px-6 sm:py-4 text-right">${acoes.join('')}</td>
                     </tr>
@@ -722,19 +732,15 @@
 
             // Comparativo
             const vereditoEl = document.getElementById('comparativo-veredito');
-            const difEl = document.getElementById('comparativo-diferenca');
             if (diferenca > 0) {
-                vereditoEl.innerText = "🏍️ O giro da loja compensa mais";
-                difEl.innerText = "+ " + formatarPreco(diferenca) + " a favor das motos";
-                difEl.className = "text-2xl font-black text-green-400";
+                vereditoEl.innerText = "O rendimento da loja foi " + formatarPreco(diferenca) + " acima da Selic";
+                vereditoEl.className = "text-xl font-bold text-green-400 mb-1";
             } else if (diferenca < 0) {
-                vereditoEl.innerText = "🏦 A renda fixa (Selic) compensa mais";
-                difEl.innerText = "- " + formatarPreco(Math.abs(diferenca)) + " a favor da Selic";
-                difEl.className = "text-2xl font-black text-red-400";
+                vereditoEl.innerText = "O rendimento da loja foi " + formatarPreco(Math.abs(diferenca)) + " abaixo da Selic";
+                vereditoEl.className = "text-xl font-bold text-red-400 mb-1";
             } else {
-                vereditoEl.innerText = "⚖️ Empate entre os cenários";
-                difEl.innerText = "Sem diferença";
-                difEl.className = "text-2xl font-black text-gray-400";
+                vereditoEl.innerText = "O rendimento da loja foi igual ao da Selic";
+                vereditoEl.className = "text-xl font-bold text-white mb-1";
             }
 
             // Totais
@@ -836,6 +842,43 @@
             document.getElementById('contador-fotos').innerText = "Foto " + (indiceAtual + 1) + " de " + fotosAtuais.length;
         }
 
+        // ================= NOTA FISCAL =================
+        let motoNotaFiscalId = null;
+
+        function escolherNotaFiscal(id) {
+            motoNotaFiscalId = id;
+            document.getElementById('input-nota-fiscal').click();
+        }
+
+        function verNotaFiscal(url) {
+            window.open(url, '_blank');
+        }
+
+        async function uploadNotaFiscal() {
+            const input = document.getElementById('input-nota-fiscal');
+            const file = input.files[0];
+            if (!file || !motoNotaFiscalId) return;
+            const fd = new FormData();
+            fd.append('nota_fiscal', file);
+            try {
+                const resp = await fetch(API_BASE + "/motos/" + motoNotaFiscalId + "/nota-fiscal", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + getToken() },
+                    body: fd
+                });
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) throw new Error("Sessão expirada ou sem permissão.");
+                    throw new Error(await mensagemDeErro(resp));
+                }
+                await carregarMotos();
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                input.value = '';
+                motoNotaFiscalId = null;
+            }
+        }
+
         // ================= INICIALIZAÇÃO =================
         document.addEventListener('DOMContentLoaded', () => {
             if (getToken()) {
@@ -844,5 +887,8 @@
             }
         });
     </script>
+
+    <!-- Input oculto para upload da Nota Fiscal -->
+    <input type="file" id="input-nota-fiscal" accept="image/*" class="hidden" onchange="uploadNotaFiscal()">
 </body>
 </html>

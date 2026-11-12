@@ -33,6 +33,7 @@ class MotoSaida(BaseModel):
     status: str
     # URL completa e pronta a usar em <img src="...">
     imagem_url: Optional[str]
+    nota_fiscal_url: Optional[str] = None
     fotos: List[str] = []
     # Ciclo "Mês VR" derivado de data_venda (usado no filtro do Dashboard)
     ciclo: Optional[str] = None

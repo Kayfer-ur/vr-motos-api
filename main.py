@@ -24,6 +24,7 @@ def _migrar():
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS chassi VARCHAR(30)"))
         conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2)"))
+        conn.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS nota_fiscal_url VARCHAR(255)"))
         conn.execute(text("UPDATE motos SET preco_custo = preco - 700 WHERE preco_custo IS NULL"))
         # Conversão dos status antigos para os novos
         conn.execute(text("UPDATE motos SET status = 'Estoque' WHERE status = 'DISPONIVEL'"))

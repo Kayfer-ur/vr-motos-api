@@ -93,6 +93,7 @@ def _montar_saida(moto: Moto, request: Request) -> MotoSaida:
         preco=float(moto.preco),
         status=moto.status,
         imagem_url=urls[0] if urls else None,
+        nota_fiscal_url=moto.nota_fiscal_url,
         fotos=urls,
         ciclo=_ciclo_vr(moto.data_venda),
         data_cadastro=moto.data_cadastro.strftime("%Y-%m-%d %H:%M") if moto.data_cadastro else None,
@@ -199,6 +200,21 @@ def vender_moto(moto_id: int, request: Request, db: Session = Depends(get_db)):
     moto.status = "Vendido"
     if moto.data_venda is None:
         moto.data_venda = datetime.utcnow()
+    db.commit()
+    db.refresh(moto)
+    return _montar_saida(moto, request)
+
+
+@router.post("/{moto_id}/nota-fiscal", response_model=MotoSaida, dependencies=[Depends(requer_admin)])
+def upload_nota_fiscal(moto_id: int, request: Request, nota_fiscal: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Anexa a foto da Nota Fiscal (apenas para motos vendidas). Exclusivo para admin."""
+    moto = db.query(Moto).filter(Moto.id == moto_id).first()
+    if moto is None:
+        raise HTTPException(status_code=404, detail="Moto não encontrada.")
+    if moto.status != "Vendido":
+        raise HTTPException(status_code=400, detail="A nota fiscal só pode ser anexada a motos vendidas.")
+
+    moto.nota_fiscal_url = _guardar_foto(nota_fiscal)
     db.commit()
     db.refresh(moto)
     return _montar_saida(moto, request)
